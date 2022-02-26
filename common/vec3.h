@@ -1,101 +1,49 @@
-#ifndef VEC3_H
-#define VEC3_H
+#ifndef _VEC3_H_
+#define _VEC3_H_
 
+#include <cassert>
 #include <cmath>
-#include <iostream>
+#include <algorithm>
+#include <type_traits>
 
-using std::sqrt;
+template<typename T>
+class Vec3;
+using Vec3f = Vec3<float>;
+using Vec3i = Vec3<int>;
 
-class vec3 {
+template<typename T>
+class Vec3 {
 public:
-	vec3() :e{ 0,0,0 } {}
-	vec3(double e0, double e1, double e2) :e{ e0, e1, e2 } {}
-
-	double x() const { return e[0]; }
-	double y() const { return e[1]; }
-	double z() const { return e[2]; }
-
-	vec3 operator-() const { return vec3(-e[0], -e[1], -e[2]); }
-	double operator[](int i) const { return e[i]; }
-	double& operator[](int i) { return e[i]; }
-
-	vec3& operator+=(const vec3 &v) {
-		e[0] += v.e[0];
-		e[1] += v.e[1];
-		e[2] += v.e[2];
-		return *this;
+	template<typename T1, typename T2, typename T3>
+	Vec3(T1 x, T2 y, T3 z) :
+		x(static_cast<T>(x)),
+		y(static_cast<T>(y)),
+		z(static_cast<T>(z)) 
+	{
+		assert(!HasNaN());
 	}
 
-	vec3& operator*=(const double t) {
-		e[0] *= t;
-		e[1] *= t;
-		e[2] *= t;
-		return *this;
-	}
+	// 该模板函数如果不正确使用，IDE 不报错，编译期才会报出大量的编译错误提示
+	// 而且该函数非常容易就错误使用了
+	// 因此我们使用 std::enable_if 使其在错误使用时隐藏起来
+	template<typename U, typename=typename std::enble_if<std::is_convertible<U,T>::value>::type>
+	Vec3(U, V) :Vec3(static_cast<T>(v), static_cast<T>(v), static_cast<T>(v)){}
+	Vec3() :Vec3(0) {}
 
-	vec3& operator/=(const double t) {
-		return *this *= 1 / t;
-	}
-
-	double length() const {
-		return sqrt(length_squared());
-	}
-
-	double length_squared() const {
-		return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
-	}
+	template<typename U>
+	Vec3(const Vec3<U>& v) : Vec3(v.x, v.y, v.z) {}
 
 public:
-	double e[3];
+	//异常检测
+	bool HasNan() const {
+		return std::isnan(static_cast<float>(x))
+			|| std::isnan(static_cast<float>(y))
+			|| std::isnan(static_cast<float>(z));
+	}
+
+	//最值
+	static const Vec3 Min() {
+
+	}
 };
-
-//Type aliases for vec3
-using point3 = vec3;	//3D point
-using color = vec3;		//RGB color
-
-#endif // !VEC3_H
-
-// vec3 Utility Functions
-inline std::ostream& operator<<(std::ostream &out, const vec3 &v) {
-	return out << v.e[0] << ' ' << v.e[1] << ' ' << v.e[2];
-}
-
-inline vec3 operator+(const vec3 &u, const vec3 &v) {
-	return vec3(u.e[0] + v.e[0], u.e[1] + v.e[1], u.e[2] + v.e[2]);
-}
-
-inline vec3 operator-(const vec3 &u, const vec3 &v) {
-	return vec3(u.e[0] - v.e[0], u.e[1] - v.e[1], u.e[2] - v.e[2]);
-}
-
-inline vec3 operator*(const vec3 &u, const vec3 &v) {
-	return vec3(u.e[0] * v.e[0], u.e[1] * v.e[1], u.e[2] * v.e[2]);
-}
-
-inline vec3 operator*(double t, const vec3 &v) {
-	return vec3(t * v.e[0], t * v.e[1], t * v.e[2]);
-}
-
-inline vec3 operator*(const vec3 &v, double t) {
-	return t * v;
-}
-
-inline vec3 operator/(vec3 v, double t) {
-	return (1 / t) * v;
-}
-
-inline double dot(const vec3 &u, const vec3 &v) {
-	return u.e[0] * v.e[0]
-		+ u.e[1] * v.e[1]
-		+ u.e[2] * v.e[2];
-}
-
-inline vec3 cross(const vec3& u, const vec3& v) {
-	return vec3(u.e[1] * v.e[2] - u.e[2] * v.e[1],
-		u.e[2] * v.e[0] - u.e[0] * v.e[2],
-		u.e[0] * v.e[1] - u.e[1] * v.e[0]);
-}
-
-inline vec3 unit_vector(vec3 v) {
-	return v / v.length();
-}
+#endif // !_VEC3_H_
