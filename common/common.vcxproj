@@ -139,6 +139,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Ray.h" />
+    <ClInclude Include="Util.h" />
     <ClInclude Include="Vec3.h" />
   </ItemGroup>
   <ItemGroup>
