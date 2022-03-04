@@ -17,6 +17,12 @@ namespace Util {
 	constexpr float LARGE_FLT = 98e8f; // 大浮点数
 	constexpr float DELTA_FLT = 98e-8f; // 小浮点数
 	constexpr float DEFAULT_TMIN = 0.001f;
+
+	float RandF() {
+		static std::default_random_engine engine;
+		static std::uniform_real_distribution<float> fMap(0.0f, 1.f - DELTA_FLT);
+		return fMap(engine);
+	}
 }
 
 #endif // !_UTIL_H_
