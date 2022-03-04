@@ -141,6 +141,9 @@
   <ItemGroup>
     <ClInclude Include="Hitable.h" />
     <ClInclude Include="HitableList.h" />
+    <ClInclude Include="Lambertian.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="Metal.h" />
     <ClInclude Include="Ptr.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Sphere.h" />
