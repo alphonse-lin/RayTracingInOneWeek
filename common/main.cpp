@@ -10,7 +10,6 @@
 const double CLOCKS_PER_MILLISECOND = ((clock_t)1);
 
 const Vec3f Sky(const Ray& ray);
-bool Hit_Sphere(const Vec3f& center, float raidus, const Ray& ray);
 const Vec3f Trace(Ptr<Hitable> scene, Ray& ray);
 
 int main() {
@@ -37,11 +36,11 @@ int main() {
 
 	//Export
 	//const std::string ROOT_PATH();
-	std::ofstream rst("data/06.ppm");
+	std::ofstream rst("data/07.ppm");
 
 	//Render
 
-	rst << "P3\n" << width << ' ' << height << "\n256\n";
+	rst << "P3\n" << width <<" " << height << "\n255\n";
 
 	for (int j = 0; j < height; j++)
 	{
@@ -58,8 +57,9 @@ int main() {
 				color += Trace(scene, ray);
 			}
 			color /= float(sampleNum);
+			Vec3f gammaColor = Util::Gamma(color);
 
-			Vec3f iSkyColor = 255.99f * color;
+			Vec3f iSkyColor = 255.99f * gammaColor;
 			rst << iSkyColor.r << " " << iSkyColor.g << " " << iSkyColor.b << std::endl;
 		}
 	}
@@ -81,34 +81,13 @@ const Vec3f Sky(const Ray& ray) {
 	return Vec3f::Lerp(white, blue, t);//linear lerp
 }
 
-bool Hit_Sphere(const Vec3f& center, float radius, const Ray& ray) {
-	// c : center
-	// r : radius
-	// o : ray.o
-	// d : ray.d
-	// 
-	// o + t * d == p
-	// (p-c)^2 == r^2
-	// (d * t + o - c)^2 == r^2
-	// d*d * t^2 + 2*d*(o-c) * t + (o-c)^2 - r^2 = 0
-
-	auto oc = ray.o - center;
-	float a = ray.d.Dot(ray.d);
-	float b = 2.f * ray.d.Dot(oc);
-	float c = oc.Dot(oc) - radius * radius;
-
-	float delta = b * b - 4.f * a * c;
-	if (delta < 0.f)
-		return false;
-	
-	return true;
-}
-
 const Vec3f Trace(Ptr<Hitable> scene, Ray & ray) {
 	HitRecord rec;
 	if (scene->Hit(ray, rec))
 	{
-		return 0.5f * (rec.n + Vec3f(1.f));// map to 0 - 1
+		Vec3f dir = rec.n + Util::RandInSphere();//diffuse
+		Ray newRay(rec.p, dir.Normalize());
+		return 0.5f * Trace(scene, newRay);//decay half
 	}
 	return Sky(ray);
 }
