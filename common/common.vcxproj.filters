@@ -15,28 +15,30 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Vec3.h">
+    <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Camera.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Ray.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Util.h">
+    <ClInclude Include="Vec3.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Hitable.h">
+    <ClInclude Include="HitRecord.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="HitableList.h">
+    <ClInclude Include="Hittable.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Ptr.h">
+    <ClInclude Include="HittableList.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Sphere.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Lambertian.h">
+    <ClInclude Include="Random.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Material.h">
@@ -45,16 +47,14 @@
     <ClInclude Include="Metal.h">
       <Filter>头文件</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Lambertian.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Metal.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
+    <ClInclude Include="Lambertian.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Sphere.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Dielectric.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
