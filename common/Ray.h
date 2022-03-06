@@ -1,38 +1,19 @@
-#ifndef _RAY_H_
-
-#define _RAY_H_
+#pragma once
 #include "Vec3.h"
-#include "Util.h"
 
-class Ray {
+class Ray final {
 public:
-	//tMin=0.001f, 以避免重复自交的情况
-	Ray(const Vec3f& origin, const Vec3f& dir, float tMin = Util::DEFAULT_TMIN, float tMax = Util::LARGE_FLT) {
-		Init(origin, dir, tMin, tMax);
-	}
+	Ray(const Ray&) = default;
+	Ray(Ray&&) = default;
+	~Ray() = default;
+	Ray& operator=(const Ray&) = delete;
+	Ray& operator=(Ray&&) = delete;
 
-public:
-	void Init(const Vec3f& origin, const Vec3f& dir, float tMin = Util::DEFAULT_TMIN, float tMax = Util::LARGE_FLT);
+	Ray(const Vec3& origin, const Vec3& direction)
+		:Origin(origin), Direction(direction) {}
 
-	const Vec3f At(float t) const { return o + t * d; }
-	const Vec3f StartPos() const { return this->At(tMin);}
-	const Vec3f EndPos() const { return this->At(tMax); }
-	const Vec3f InvDir() const { return { 1.f / d.x, 1.f / d.y, 1.f / d.z }; }
+	const Vec3 Origin;
+	const Vec3 Direction;
 
-public:
-	Vec3f o;//起点
-	Vec3f d;//方向
-
-	//将tMin 和 tMax 直接放在 ray中，简化设计
-	float tMin;//决定射线起点
-	float tMax; //决定射线终点
+	Vec3 PointAtParameter(const float t)const { return Origin + t * Direction; }
 };
-
-void Ray::Init(const Vec3f& origin, const Vec3f& dir, float tMin, float tMax) {
-	o = origin;
-	d = dir;
-	this->tMin = tMin;
-	this->tMax = tMax;
-}
-
-#endif // !_RAY_H_

@@ -1,184 +1,97 @@
-#ifndef _VEC3_H_
-#define _VEC3_H_
+#pragma once
+#define _USE_MATH_DEFINES
+#include<cmath>
+#undef _USE_MATH_DEFINES
 
-#include <cassert>
-#include <cmath>
-#include <algorithm>
-#include <type_traits>
+#include <iostream>
 
-template<typename T>
-class Vec3;
-using Vec3f = Vec3<float>;
-using Vec3i = Vec3<int>;
-
-template<typename T>
-class Vec3 {
+class Vec3 final {
 public:
-	template<typename T1, typename T2, typename T3>
-	Vec3(T1 x, T2 y, T3 z) :
-		x(static_cast<T>(x)),
-		y(static_cast<T>(y)),
-		z(static_cast<T>(z)) 
-	{
-		assert(!HasNaN());
-	}
+	Vec3() = default;
+	Vec3(const Vec3&) = default;
+	Vec3(Vec3&&) = default;
+	~Vec3() = default;
+	Vec3& operator=(const Vec3&) = default;
+	Vec3& operator=(Vec3&&) = default;
 
-	// 该模板函数如果不正确使用，IDE 不报错，编译期才会报出大量的编译错误提示
-	// 而且该函数非常容易就错误使用了
-	// 因此我们使用 std::enable_if 使其在错误使用时隐藏起来
-	template<typename U, typename=typename std::enable_if<std::is_convertible<U,T>::value>::type>
-	Vec3(U v) :Vec3(static_cast<T>(v), static_cast<T>(v), static_cast<T>(v)){}
-	Vec3() :Vec3(0) {}
+	explicit Vec3(const float a) :_x(a), _y(a), _z(a) {}
+	Vec3(const float x, const float y, const float z):_x(x), _y(y), _z(z) {}
 
-	template<typename U>
-	Vec3(const Vec3<U>& v) : Vec3(v.x, v.y, v.z) {}
+	float x() const { return _x;}
+	float y() const { return _y; }
+	float z() const { return _z; }
 
-public:
-	//异常检测
-	bool HasNaN() const {
-		return std::isnan(static_cast<float>(x))
-			|| std::isnan(static_cast<float>(y))
-			|| std::isnan(static_cast<float>(z));
-	}
+	float r() const { return _x; }
+	float g() const { return _y; }
+	float b() const { return _z; }
 
-	//最值
-	static const Vec3 Min(const Vec3 & lhs, const Vec3 & rhs) {
-		return{ (std::min)(lhs.x, rhs.x), (std::min)(lhs.y, rhs.y),(std::min)(lhs.z, rhs.z) };
-	}
+	Vec3 const& operator +()const { return *this; }
+	Vec3 operator - ()const { return{ -_x, -_y, -_z }; }
 
-	static const Vec3 Max(const Vec3& lhs, const Vec3& rhs) {
-		return { (std::max)(lhs.x, rhs.x), (std::max)(lhs.y, rhs.y),(std::max)(lhs.z, rhs.z) };
-	}
-
-	//元素获取
-	T & operator[](int n) {
-		assert(n >= 0 && n < 3);
-		return _data[n];
-	}
-
-	const T & operator[](int n)const {
-		assert(n >= 0 && n < 3);
-		return _data[n];
-	}
-
-	//线性插值
-	template<typename U>
-	static const Vec3 Lerp(const Vec3& lhs, const Vec3& rhs, U t) {
-		float tF = static_cast<float>(t);
-		assert(tF >= 0. && tF <= 1.);
-		Vec3f lhsF = lhs;
-		Vec3f rhsF = rhs;
-		return (1.0f - tF) * lhsF + tF * rhsF;
-	}
-	template<typename U>
-	const Vec3 LerpWith(const Vec3 & rhs, U t) const {
-		return Lerp(*this, rhs, t);
-	}
-
-	//线性运算： +, -, *, /
-	const Vec3 operator+(const Vec3 & rhs) const {
-		return { x + rhs.x, y + rhs.y, z + rhs.z };
-	}
-
-	Vec3& operator+=(const Vec3 & rhs) {
-		x += rhs.x;
-		y += rhs.y;
-		z += rhs.z;
-		return *this;
-	}
-
-	const Vec3 operator-() const{
-		return { -x, -y, -z };
-	}
-
-	const Vec3 operator-(const Vec3 & rhs) const {
-		return{ x - rhs.x, y - rhs.y, z - rhs.z };
-	}
-
-	Vec3 & operator-=(const Vec3 & rhs) {
-		x -= rhs.x;
-		y -= rhs.y;
-		z -= rhs.z;
-		return *this;
-	}
-
-	const Vec3 operator*(T k)const {
-		return { x * k, y * k, z * k };
-	}
-
-	Vec3 & operator*=(T k) {
-		x *= k;
-		y *= k;
-		z *= k;
-		return *this;
-	}
-
-	friend const Vec3 operator*(T k, Vec3 v) {
-		return v * k;
-	}
-
-	const Vec3 operator/(T k)const {
-		assert(k != 0);
-		float invK = 1 / k;
-		return{ x * invK, y * invK, z * invK };
-	}
-
-	Vec3& operator/=(T k) {
-		assert(k != 0);
-		float invK = 1 / k;
-		x *= invK;
-		y *= invK;
-		z *= invK;
-		return *this;
-	}
-
-	//内积
-	static T Dot(const Vec3& lhs, const Vec3& rhs) {
-		return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
-	}
-
-	T Dot(const Vec3& rhs)const {
-		return Dot(*this, rhs);
-	}
-
-	//内积范数
-	T Norm2() const {
-		return this->Dot(*this);
-	}
-
-	T Norm() const {
-		return std::sqrt(Norm2());
-	}
-
-	const Vec3 Normalize() const {
-		T norm = Norm();
-		assert(norm != static_cast<T>(0));
-		return *this / norm;
-	}
-
-	//逐元素相乘
-	const Vec3 operator*(const Vec3& rhs)const {
-		return { x * rhs.x, y * rhs.y, z * rhs.z };
-	}
-
-	//叉乘
-	static const Vec3 Cross(const Vec3& lhs, const Vec3& rhs) {
-		return {
-			lhs.y * rhs.z - lhs.z * rhs.y,
-			lhs.z * rhs.x - lhs.x * rhs.z,
-			lhs.x * rhs.y - lhs.y * rhs.x
-		};
-	}
+	Vec3& operator +=(const Vec3& v) { _x += v._x, _y += v._y; _z += v._z; return *this;}
+	Vec3& operator -=(const Vec3& v) { _x -= v._x, _y -= v._y, _z -= v._z; return *this; }
+	Vec3& operator *=(const Vec3& v) { _x *= v._x, _y *= v._y, _z *= v._z; return *this; }
+	Vec3& operator /=(const Vec3& v) { _x /= v._x, _y /= v._y, _z /= v._z; return *this; }
 	
-	const Vec3 Cross(const Vec3& rhs)const {
-		return Cross(*this, rhs);
-	}
+	Vec3& operator +=(const float s) { _x += s; _y += s; _z += s; return *this; }
+	Vec3& operator -=(const float s) { _x -= s; _y -= s; _z -= s; return *this; }
+	Vec3& operator *=(const float s) { _x *= s; _y *= s; _z *= s; return *this; }
+	Vec3& operator /=(const float s) { _x /= s; _y /= s; _z /= s; return *this; }
 
-public:
-	union {// 常用技巧，使得我们可以方便的获取元素，而不需要通过函数接口，如 x(), y()
-		struct { T x, y, z; };
-		struct { T r, g, b; };
-		struct { T _data[3]; };
-	};
+private:
+	float _x, _y, _z;
 };
-#endif
+
+inline Vec3 operator +(const Vec3& left, const Vec3& right) { return Vec3(left) += right; }
+inline Vec3 operator -(const Vec3& left, const Vec3& right) { return Vec3(left) -= right; }
+inline Vec3 operator *(const Vec3& left, const Vec3& right) { return Vec3(left) *= right; }
+inline Vec3 operator /(const Vec3& left, const Vec3& right) { return Vec3(left) /= right; }
+
+inline Vec3 operator +(const Vec3& left, const float right) { return Vec3(left) += right; }
+inline Vec3 operator -(const Vec3& left, const float right) { return Vec3(left) -= right; }
+inline Vec3 operator *(const Vec3& left, const float right) { return Vec3(left) *= right; }
+inline Vec3 operator /(const Vec3& left, const float right) { const float f = 1.f / right;  return Vec3(left) *= f; }
+
+inline Vec3 operator + (const float left, const Vec3& right) { return { left + right.x(), left + right.y(), left + right.z() }; }
+inline Vec3 operator - (const float left, const Vec3& right) { return { left - right.x(), left - right.y(), left - right.z() }; }
+inline Vec3 operator * (const float left, const Vec3& right) { return { left * right.x(), left * right.y(), left * right.z() }; }
+inline Vec3 operator / (const float left, const Vec3& right) { return { left / right.x(), left / right.y(), left / right.z() }; }
+
+inline float Dot(const Vec3& l, const Vec3& r) {
+	return l.x() * r.x() + l.y() * r.y() + l.z() * r.z();
+}
+
+inline Vec3 Cross(const Vec3& l, const Vec3& r) {
+	return Vec3{
+		l.y() * r.z() - l.z() * r.y(),
+		l.z() * r.z() - l.x() * r.z(),
+		l.x() * r.y() - l.y() * r.x()
+	};
+}
+
+inline float SquaredLength(const Vec3& v) { 
+	return Dot(v, v); 
+}
+
+inline float Length(const Vec3& v) { 
+	return std::sqrt(SquaredLength(v)); 
+}
+
+inline Vec3 Sqrt(const Vec3& v){
+	return { std::sqrt(v.x()), std::sqrt(v.y()), std::sqrt(v.z()) };
+}
+
+inline Vec3 UniVector(const Vec3& v) {
+	return v / Length(v);
+}
+
+inline std::istream& operator >>(std::istream& in, Vec3 v) {
+	float x, y, z;
+	in >> x >> y >> z;
+	v = Vec3(x, y, z);
+	return in;
+}
+
+inline std::ostream& operator<<(std::ostream& out, const Vec3& v) {
+	return out << v.x() << " " << v.y() << " " << v.z();
+}
